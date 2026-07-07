@@ -5,6 +5,7 @@ class EcoConstants {
   static const String tagline = 'Small Actions, Big Impact';
 
   static const String baseUrl = 'https://68641c815b5a44b38edc8962.mockapi.io';
+  static const String usersBaseUrl = 'https://6a44fe22aab3faec3f692f84.mockapi.io';
 
   static const String missionsEndpoint = '/missions';
   static const String usersEndpoint = '/users';

@@ -3,6 +3,7 @@ class User {
   final String name;
   final String email;
   final String username;
+  final String password;
   final int level;
   final int ecoPoint;
   final int xp;
@@ -10,11 +11,12 @@ class User {
   final List<String> badges;
   final String avatar;
 
-  User({
+  const User({
     required this.id,
     required this.name,
     required this.email,
     required this.username,
+    required this.password,
     this.level = 1,
     this.ecoPoint = 0,
     this.xp = 0,
@@ -25,16 +27,19 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      username: json['username'] ?? '',
-      level: json['level'] ?? 1,
-      ecoPoint: json['ecoPoint'] ?? 0,
-      xp: json['xp'] ?? 0,
-      maxXp: json['maxXp'] ?? 100,
-      badges: List<String>.from(json['badges'] ?? []),
-      avatar: json['avatar'] ?? '',
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      password: json['password']?.toString() ?? '',
+      level: int.tryParse(json['level'].toString()) ?? 1,
+      ecoPoint: int.tryParse(json['ecoPoint'].toString()) ?? 0,
+      xp: int.tryParse(json['xp'].toString()) ?? 0,
+      maxXp: int.tryParse(json['maxXp'].toString()) ?? 100,
+      badges: json['badges'] != null
+          ? List<String>.from(json['badges'])
+          : <String>[],
+      avatar: json['avatar']?.toString() ?? '',
     );
   }
 
@@ -44,6 +49,7 @@ class User {
       'name': name,
       'email': email,
       'username': username,
+      'password': password,
       'level': level,
       'ecoPoint': ecoPoint,
       'xp': xp,
@@ -53,13 +59,14 @@ class User {
     };
   }
 
-  double get xpProgress => maxXp > 0 ? xp / maxXp : 0;
+  double get xpProgress => maxXp == 0 ? 0 : xp / maxXp;
 
   User copyWith({
     String? id,
     String? name,
     String? email,
     String? username,
+    String? password,
     int? level,
     int? ecoPoint,
     int? xp,
@@ -72,6 +79,7 @@ class User {
       name: name ?? this.name,
       email: email ?? this.email,
       username: username ?? this.username,
+      password: password ?? this.password,
       level: level ?? this.level,
       ecoPoint: ecoPoint ?? this.ecoPoint,
       xp: xp ?? this.xp,
@@ -79,5 +87,18 @@ class User {
       badges: badges ?? this.badges,
       avatar: avatar ?? this.avatar,
     );
+  }
+
+  @override
+  String toString() {
+    return 'User('
+        'id: $id, '
+        'name: $name, '
+        'email: $email, '
+        'username: $username, '
+        'level: $level, '
+        'ecoPoint: $ecoPoint, '
+        'xp: $xp'
+        ')';
   }
 }
