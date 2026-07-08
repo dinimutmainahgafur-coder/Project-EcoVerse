@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 20),
                 _buildShortcutMenu(),
                 const SizedBox(height: 20),
-                _buildWeeklyProgress(),
+                _buildWeeklyProgress(missionProvider),
                 const SizedBox(height: 100),
               ],
             ),
@@ -270,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
-                  value: user?.xpProgress ?? 0,
+                  value: user?.xpProgress ?? 0.0,
                   backgroundColor: Colors.white.withValues(alpha: 0.2),
                   valueColor: const AlwaysStoppedAnimation<Color>(EcoColors.gold),
                   minHeight: 8,
@@ -299,7 +299,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/mission'),
+              onTap: () => Navigator.pushNamed(context, '/mission').then((_) => provider.refreshMissions()),
               child: Text(
                 'Lihat semua',
                 style: GoogleFonts.poppins(
@@ -348,7 +348,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMissionCard(dynamic mission) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/mission_detail', arguments: mission),
+      onTap: () {
+        Navigator.pushNamed(context, '/mission_detail', arguments: mission)
+            .then((_) => context.read<MissionProvider>().refreshMissions());
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -368,7 +371,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
-                imageUrl: mission.image,
+                imageUrl: mission.image ?? '',
                 width: 64,
                 height: 64,
                 fit: BoxFit.cover,
@@ -392,7 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    mission.title,
+                    mission.title ?? 'Misi',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -403,7 +406,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    mission.description,
+                    mission.description ?? '',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: EcoColors.subtitle,
@@ -419,7 +422,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '+${mission.point} Poin',
+                      '+${mission.point ?? 0} Poin',
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -431,18 +434,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: EcoColors.primary,
-                borderRadius: BorderRadius.circular(10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/mission_detail', arguments: mission)
+                    .then((_) => context.read<MissionProvider>().refreshMissions());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: EcoColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: Text(
                 'Mulai',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
                 ),
               ),
             ),
@@ -472,7 +482,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.eco_rounded,
                 label: 'Misi',
                 color: EcoColors.primary,
-                onTap: () => Navigator.pushNamed(context, '/mission'),
+                onTap: () => Navigator.pushNamed(context, '/mission').then((_) => context.read<MissionProvider>().refreshMissions()),
               ),
             ),
             const SizedBox(width: 12),
@@ -559,7 +569,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildWeeklyProgress() {
+  Widget _buildWeeklyProgress(MissionProvider missionProvider) {
+    final int currentDayIndex = DateTime.now().weekday;
+    final daysLabels = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -587,15 +600,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildDayItem('S', true),
-              _buildDayItem('S', true),
-              _buildDayItem('R', false),
-              _buildDayItem('K', false),
-              _buildDayItem('J', false),
-              _buildDayItem('S', false),
-              _buildDayItem('M', false),
-            ],
+            children: List.generate(7, (index) {
+              bool isDayActive = (index + 1) <= currentDayIndex;
+              return _buildDayItem(daysLabels[index], isDayActive);
+            }),
           ),
         ),
       ],
@@ -608,23 +616,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Container(
           width: 32,
           height: 32,
-      decoration: BoxDecoration(
-        color: active ? EcoColors.primary : EcoColors.primary.withValues(alpha: 0.1),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: active
-            ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
-            : Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: EcoColors.primary.withValues(alpha: 0.5),
-                ),
-              ),
-      ),
-    ),
+          decoration: BoxDecoration(
+            color: active ? EcoColors.primary : EcoColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: active
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                : Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: EcoColors.primary.withValues(alpha: 0.5),
+                    ),
+                  ),
+          ),
+        ),
       ],
     );
   }
