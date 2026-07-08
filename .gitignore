@@ -43,14 +43,26 @@ app.*.map.json
 /android/app/release
 
 # Platform directories
-/android/
-/ios/
-/linux/
-/macos/
-/web/
-/windows/
+#/android/
+#/ios/
+#/linux/
+#/macos/
+#/web/
+#/windows/
 
 # Exceptions
 !/android/app/debug
 !/android/app/profile
 !/android/app/release
+
+# Flutter generated files
+**/.gradle/
+**/.kotlin/
+**/ephemeral/
+**/Generated.xcconfig
+**/flutter_export_environment.sh
+**/generated_config.cmake
+**/.plugin_symlinks/
+
+# Local configuration
+**/local.properties
