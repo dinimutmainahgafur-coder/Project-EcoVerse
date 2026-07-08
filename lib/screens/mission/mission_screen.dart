@@ -1,26 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:ecoverse/models/mission.dart';
+import 'package:ecoverse/services/api_service.dart';
+// IMPORT DIPERBAIKI KE FOLDER mission_detail
+import 'package:ecoverse/screens/mission_detail/mission_detail_screen.dart';
 
-class MissionScreen extends StatelessWidget {
+class MissionScreen extends StatefulWidget {
   const MissionScreen({super.key});
 
   @override
+  State<MissionScreen> createState() => _MissionScreenState();
+}
+
+class _MissionScreenState extends State<MissionScreen> {
+  final ApiService apiService = ApiService();
+  late Future<List<Mission>> futureMission;
+
+  @override
+  void initState() {
+    super.initState();
+    loadMission();
+  }
+
+  void loadMission() {
+    futureMission = apiService.getMissions();
+  }
+
+  Future<void> refreshMission() async {
+    if (!mounted) return;
+    setState(() {
+      loadMission();
+    });
+  }
+
+  Color getStatusColor(String status) {
+    if (status == "Selesai") {
+      return Colors.green;
+    }
+    return Colors.orange;
+  }
+
+  IconData getMissionIcon(String category) {
+    switch (category) {
+      case "Daily Mission":
+        return Icons.eco;
+      case "Challenge":
+        return Icons.flag;
+      case "Academy":
+        return Icons.menu_book;
+      default:
+        return Icons.eco;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final dates = [20, 21, 22, 23, 24, 25,26];
-    final days = [
-     "Mon",
-     "Tue",
-     "Wed",
-     "Thu",
-     "Fri",
-     "Sat",
-     "Sun",
-    ];
     return Scaffold(
-      backgroundColor: const Color(0xffF8F8F8),
+      backgroundColor: const Color(0xffF7F8FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        leading: const BackButton(color: Colors.black),
         title: const Text(
           "Daily Mission",
           style: TextStyle(
@@ -28,187 +68,251 @@ class MissionScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        leading: const BackButton(color: Colors.black),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 15),
+      body: RefreshIndicator(
+        color: Colors.green,
+        onRefresh: refreshMission,
+        child: FutureBuilder<List<Mission>>(
+          future: futureMission,
+          builder: (context, snapshot) {
+            /// Status Loading
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.green),
+              );
+            }
 
-          /// Kalender
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: dates.length,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              itemBuilder: (context, index) {
-                bool selected = index == 4;
-
-                return Container(
-                  width: 55,
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? Colors.green
-                        : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
+            /// Status Error
+            if (snapshot.hasError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 80,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Terjadi Kesalahan",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       Text(
-                        "${dates[index]}",
-                        style: TextStyle(
-                          color:
-                              selected ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                        snapshot.error.toString(),
+                        textAlign: TextAlign.center,
                       ),
-                      Text(
-                        days[index],
-                        style: TextStyle(
-                          color:
-                              selected ? Colors.white : Colors.grey,
-                        ),
-                      )
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          /// Card Mission
-          Expanded(
-            child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Column(
-                  children: [
-
-                    Image.asset(
-                      'assets/images/Tumbler.png',
-                      height: 180,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      "Bawa Tumbler Sendiri",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      "Kurangi penggunaan botol plastik sekali pakai "
-                      "dengan membawa tumbler sendiri saat beraktivitas.",
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius:
-                            BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "+20 Point",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Upload Bukti",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(18),
-                        ),
-                        child: const Center(
-                          child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt_outlined,
-                                size: 35,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(height: 8),
-                              Text("Tap untuk upload"),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: () {},
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: refreshMission,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(15),
-                          ),
+                          foregroundColor: Colors.white,
                         ),
-                        child: const Text(
-                          "Selesai",
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        child: const Text("Coba Lagi"),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final missions = snapshot.data ?? [];
+
+            /// Status Data Kosong
+            if (missions.isEmpty) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.eco,
+                      size: 80,
+                      color: Colors.green,
+                    ),
+                    SizedBox(height: 15),
+                    Text(
+                      "Belum Ada Daily Mission",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-              ),
+              );
+            }
+
+            /// Menampilkan Daftar Mission
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                const Text(
+                  "Daily Eco Mission",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Selesaikan misi hari ini dan kumpulkan Eco Point 🌿",
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: missions.length,
+                  itemBuilder: (context, index) {
+                    final mission = missions[index];
+                    return _buildMissionCard(mission);
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Widget Helper Card
+  Widget _buildMissionCard(Mission mission) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MissionDetailScreen(
+              mission: mission,
             ),
           ),
-        ],
+        );
+
+        // PENGAMAN: Cek apakah widget masih aktif sebelum refresh data
+        if (!mounted) return;
+        refreshMission();
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha((0.04 * 255).round()),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.green.shade100,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                getMissionIcon(mission.category),
+                color: Colors.green,
+                size: 30,
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    mission.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    mission.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "+${mission.point} Point",
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: getStatusColor(mission.status)
+                              .withAlpha((0.15 * 255).round()),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          mission.status,
+                          style: TextStyle(
+                            color: getStatusColor(mission.status),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    mission.category,
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: Colors.grey,
+            ),
+          ],
+        ),
       ),
     );
   }

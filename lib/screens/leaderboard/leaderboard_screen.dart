@@ -33,9 +33,22 @@ class LeaderboardScreen extends StatelessWidget {
           children: [
             _buildFilterChips(provider),
             const SizedBox(height: 24),
-            _buildPodium(data),
-            const SizedBox(height: 20),
-            ...data.skip(3).map((d) => _buildRankItem(d, false)),
+            
+            if (data.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 40),
+                child: Center(
+                  child: Text(
+                    'Belum ada data peringkat',
+                    style: GoogleFonts.poppins(color: EcoColors.subtitle),
+                  ),
+                ),
+              )
+            else ...[
+              _buildPodium(data),
+              const SizedBox(height: 20),
+              ...data.skip(3).map((d) => _buildRankItem(d, false)),
+            ],
           ],
         ),
       ),
@@ -91,17 +104,21 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildPodium(List<Map<String, dynamic>> data) {
-    if (data.length < 3) return const SizedBox();
+    if (data.length < 3) {
+      return Column(
+        children: data.map((d) => _buildRankItem(d, false)).toList(),
+      );
+    }
 
     return SizedBox(
-      height: 220,
+      height: 240, 
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _buildPodiumItem(data[1], 2, 100),
-          _buildPodiumItem(data[0], 1, 130),
-          _buildPodiumItem(data[2], 3, 80),
+          Expanded(child: _buildPodiumItem(data[1], 2, 90)),  
+          Expanded(child: _buildPodiumItem(data[0], 1, 120)), 
+          Expanded(child: _buildPodiumItem(data[2], 3, 70)),  
         ],
       ),
     );
@@ -114,43 +131,33 @@ class LeaderboardScreen extends StatelessWidget {
       3: const Color(0xFFA1887F),
     };
 
-    return Container(
-      width: 95,
-      margin: const EdgeInsets.symmetric(horizontal: 6),
+    final String rawName = data['name']?.toString() ?? 'User';
+    final String displayName = rawName.split(' ').first;
+    final String initial = rawName.isNotEmpty ? rawName[0].toUpperCase() : '?';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           if (rank == 1)
-            Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD54F),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.emoji_events_rounded, size: 14, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 8),
+            const Icon(Icons.emoji_events_rounded, size: 20, color: Color(0xFFFFD54F))
+          else
+            const SizedBox(height: 20), 
+          const SizedBox(height: 4),
           Container(
-            width: 52,
-            height: 52,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: colors[rank]!.withValues(alpha: 0.15),
+              color: colors[rank]!.withOpacity(0.15),
               shape: BoxShape.circle,
               border: Border.all(color: colors[rank]!, width: 2),
             ),
             child: Center(
               child: Text(
-                data['name'].toString()[0],
+                initial,
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: colors[rank],
                 ),
@@ -159,26 +166,26 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            data['name'].toString().split(' ').first,
+            displayName,
             style: GoogleFonts.poppins(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: EcoColors.text,
             ),
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 2),
           Text(
-            '${data['point']} Poin',
-            style: GoogleFonts.poppins(fontSize: 11, color: EcoColors.subtitle),
+            '${data['point'] ?? 0} Pts',
+            style: GoogleFonts.poppins(fontSize: 10, color: EcoColors.subtitle, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Container(
-            width: 80,
+            width: double.infinity,
             height: barHeight,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [colors[rank]!, colors[rank]!.withValues(alpha: 0.6)],
+                colors: [colors[rank]!, colors[rank]!.withOpacity(0.6)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -188,7 +195,7 @@ class LeaderboardScreen extends StatelessWidget {
               child: Text(
                 '$rank',
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -201,6 +208,9 @@ class LeaderboardScreen extends StatelessWidget {
   }
 
   Widget _buildRankItem(Map<String, dynamic> data, bool isCurrentUser) {
+    final String rawName = data['name']?.toString() ?? 'User';
+    final String initial = rawName.isNotEmpty ? rawName[0].toUpperCase() : '?';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -209,7 +219,7 @@ class LeaderboardScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -218,28 +228,28 @@ class LeaderboardScreen extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 28,
+            width: 32,
             child: Text(
-              '${data['rank']}',
+              '#${data['rank'] ?? '-'}',
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: EcoColors.text,
               ),
             ),
           ),
           Container(
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: EcoColors.primary.withValues(alpha: 0.1),
+              color: EcoColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
-                data['name'].toString()[0],
+                initial,
                 style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: EcoColors.primary,
                 ),
@@ -252,16 +262,18 @@ class LeaderboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data['name'],
+                  rawName,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: EcoColors.text,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Level ${data['level']}',
-                  style: GoogleFonts.poppins(fontSize: 12, color: EcoColors.subtitle),
+                  'Level ${data['level'] ?? 1}',
+                  style: GoogleFonts.poppins(fontSize: 11, color: EcoColors.subtitle),
                 ),
               ],
             ),
@@ -269,11 +281,11 @@ class LeaderboardScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: EcoColors.primary.withValues(alpha: 0.1),
+              color: EcoColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '${data['point']} Poin',
+              '${data['point'] ?? 0} Poin',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

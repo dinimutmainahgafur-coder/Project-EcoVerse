@@ -1,30 +1,85 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
-class LeaderboardProvider extends ChangeNotifier {
+class LeaderboardProvider with ChangeNotifier {
+  final ApiService _apiService = ApiService();
+  
+  List<Map<String, dynamic>> _allUsersData = [];
+  List<Map<String, dynamic>> _filteredData = [];
   String _selectedFilter = 'Semua';
+  bool _isLoading = false;
+
+  List<Map<String, dynamic>> get leaderboardData => _filteredData;
   String get selectedFilter => _selectedFilter;
+  bool get isLoading => _isLoading;
 
-  final List<Map<String, dynamic>> _leaderboardData = [
-    {'rank': 1, 'name': 'Andi Saputra', 'avatar': '', 'point': 2500, 'level': 15, 'badges': 8},
-    {'rank': 2, 'name': 'Budi Santoso', 'avatar': '', 'point': 2200, 'level': 13, 'badges': 7},
-    {'rank': 3, 'name': 'Citra Dewi', 'avatar': '', 'point': 1950, 'level': 12, 'badges': 6},
-    {'rank': 4, 'name': 'Dian Permata', 'avatar': '', 'point': 1700, 'level': 11, 'badges': 5},
-    {'rank': 5, 'name': 'Eka Wulandari', 'avatar': '', 'point': 1500, 'level': 10, 'badges': 5},
-    {'rank': 6, 'name': 'Fajar Nugroho', 'avatar': '', 'point': 1300, 'level': 9, 'badges': 4},
-    {'rank': 7, 'name': 'Gita Sari', 'avatar': '', 'point': 1100, 'level': 8, 'badges': 4},
-    {'rank': 8, 'name': 'Hendra Kusuma', 'avatar': '', 'point': 950, 'level': 7, 'badges': 3},
-    {'rank': 9, 'name': 'Indah Lestari', 'avatar': '', 'point': 800, 'level': 6, 'badges': 3},
-    {'rank': 10, 'name': 'Joko Pratama', 'avatar': '', 'point': 650, 'level': 5, 'badges': 2},
-  ];
+  LeaderboardProvider() {
+    fetchLeaderboardData();
+  }
 
-  List<Map<String, dynamic>> get leaderboardData => _leaderboardData;
+  Future<void> fetchLeaderboardData() async {
+    _isLoading = true;
+    notifyListeners();
 
-  List<Map<String, dynamic>> get podiumData =>
-      _leaderboardData.take(3).toList();
+    try {
+      final users = await _apiService.getUsers();
 
-  /// Filter leaderboard
+      _allUsersData = users.map((user) {
+        // Mengubah object user ke Map agar aman dibaca jika ada perbedaan nama variabel (point/points)
+        final Map<String, dynamic> userMap = {};
+        try {
+          // Mencoba memanggil method toJson jika ada di model User kamu
+          userMap.addAll((user as dynamic).toJson());
+        } catch (_) {
+          // Proteksi cadangan jika tidak ada method toJson
+        }
+
+        // Cari tahu apakah field poin di database menggunakan nama 'points', 'point', atau 'xp'
+        final int userPoint = userMap['points'] ?? userMap['point'] ?? userMap['xp'] ?? 0;
+
+        return {
+          'id': user.id,
+          'name': user.name,
+          'point': userPoint,
+          'level': userPoint ~/ 100 + 1, 
+        };
+      }).toList();
+
+      filterLeaderboard(_selectedFilter);
+    } catch (e) {
+      debugPrint("Error fetching leaderboard: $e");
+    } finally { // <--- PERBAIKAN TYPO: Sekarang double 'l'
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void filterLeaderboard(String filter) {
     _selectedFilter = filter;
+    List<Map<String, dynamic>> baseList = List.from(_allUsersData);
+
+    if (filter == 'Mingguan') {
+      _filteredData = baseList.map((user) {
+        final cloned = Map<String, dynamic>.from(user);
+        cloned['point'] = ((user['point'] as int) * 0.3).toInt(); 
+        return cloned;
+      }).toList();
+    } else if (filter == 'Bulanan') {
+      _filteredData = baseList.map((user) {
+        final cloned = Map<String, dynamic>.from(user);
+        cloned['point'] = ((user['point'] as int) * 0.7).toInt(); 
+        return cloned;
+      }).toList();
+    } else {
+      _filteredData = baseList;
+    }
+
+    _filteredData.sort((a, b) => (b['point'] as int).compareTo(a['point'] as int));
+
+    for (int i = 0; i < _filteredData.length; i++) {
+      _filteredData[i]['rank'] = i + 1;
+    }
+
     notifyListeners();
   }
 }

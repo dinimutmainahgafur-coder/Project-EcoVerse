@@ -9,21 +9,25 @@ import '../../providers/journal_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class MissionDetailScreen extends StatefulWidget {
-  const MissionDetailScreen({super.key});
+  // 1. Tambahkan parameter mission di constructor agar sinkron dengan screen sebelumnya
+  final Mission mission;
+  const MissionDetailScreen({super.key, required this.mission});
 
   @override
   State<MissionDetailScreen> createState() => _MissionDetailScreenState();
 }
 
 class _MissionDetailScreenState extends State<MissionDetailScreen> {
+  // 2. Gunakan late widget.mission untuk inisialisasi lokal jika datanya ingin dimutasi di state ini
   late Mission mission;
   bool _proofUploaded = false;
   int _selectedDateIndex = 4;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    mission = ModalRoute.of(context)!.settings.arguments as Mission;
+  void initState() {
+    super.initState();
+    // Inisialisasi data mission dari widget constructor
+    mission = widget.mission;
   }
 
   void _completeMission() async {
@@ -139,7 +143,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: EcoColors.primary.withValues(alpha: 0.3),
+                            color: EcoColors.primary.withAlpha((0.3 * 255).round()),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -164,7 +168,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: isSelected
-                            ? Colors.white.withValues(alpha: 0.8)
+                            ? Colors.white.withAlpha((0.8 * 255).round())
                             : EcoColors.subtitle,
                       ),
                     ),
@@ -186,7 +190,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withAlpha((0.06 * 255).round()),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -213,7 +217,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
       width: 160,
       height: 160,
       decoration: BoxDecoration(
-        color: EcoColors.primary.withValues(alpha: 0.06),
+        color: EcoColors.primary.withAlpha((0.06 * 255).round()),
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -276,7 +280,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: EcoColors.primary.withValues(alpha: 0.1),
+        color: EcoColors.primary.withAlpha((0.1 * 255).round()),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -306,7 +310,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withAlpha((0.04 * 255).round()),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -321,7 +325,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: EcoColors.primary.withValues(alpha: 0.1),
+                  color: EcoColors.primary.withAlpha((0.1 * 255).round()),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -368,12 +372,12 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
               height: 100,
               decoration: BoxDecoration(
                 color: _proofUploaded
-                    ? EcoColors.success.withValues(alpha: 0.08)
+                    ? EcoColors.success.withAlpha((0.08 * 255).round())
                     : const Color(0xFFF8FFF8),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _proofUploaded
-                      ? EcoColors.success.withValues(alpha: 0.3)
+                      ? EcoColors.success.withAlpha((0.3 * 255).round())
                       : EcoColors.divider,
                   width: 1.5,
                 ),
@@ -408,7 +412,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
                         Icon(
                           Icons.add_a_photo_outlined,
                           size: 32,
-                          color: EcoColors.subtitle.withValues(alpha: 0.5),
+                          color: EcoColors.subtitle.withAlpha((0.5 * 255).round()),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -440,16 +444,16 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           onPressed: isCompleted ? null : _showConfirmDialog,
           style: ElevatedButton.styleFrom(
             backgroundColor: isCompleted
-                ? EcoColors.primary.withValues(alpha: 0.5)
+                ? EcoColors.primary.withAlpha((0.5 * 255).round())
                 : EcoColors.primary,
             foregroundColor: Colors.white,
-            disabledBackgroundColor: EcoColors.primary.withValues(alpha: 0.5),
-            disabledForegroundColor: Colors.white.withValues(alpha: 0.8),
+            disabledBackgroundColor: EcoColors.primary.withAlpha((0.5 * 255).round()),
+            disabledForegroundColor: Colors.white.withAlpha((0.8 * 255).round()),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             elevation: isCompleted ? 0 : 4,
-            shadowColor: EcoColors.primary.withValues(alpha: 0.3),
+            shadowColor: EcoColors.primary.withAlpha((0.3 * 255).round()),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
