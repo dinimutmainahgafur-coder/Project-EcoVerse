@@ -7,6 +7,11 @@ class Mission {
   final String status;
   final String image;
 
+  // Khusus Journal
+  final String completedDate;
+  final String link;
+  final String createdAt;
+
   Mission({
     required this.id,
     required this.title,
@@ -15,17 +20,25 @@ class Mission {
     required this.point,
     required this.status,
     required this.image,
+    this.completedDate = '',
+    this.link = '',
+    this.createdAt = '',
   });
 
   factory Mission.fromJson(Map<String, dynamic> json) {
     return Mission(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       category: json['category'] ?? '',
-      point: json['point'] ?? 0,
+      point: json['point'] is int
+          ? json['point']
+          : int.tryParse(json['point'].toString()) ?? 0,
       status: json['status'] ?? 'Belum Selesai',
       image: json['image'] ?? '',
+      completedDate: json['completedDate'] ?? '',
+      link: json['link'] ?? '',
+      createdAt: json['createdAt'] ?? '',
     );
   }
 
@@ -38,6 +51,9 @@ class Mission {
       'point': point,
       'status': status,
       'image': image,
+      'completedDate': completedDate,
+      'link': link,
+      'createdAt': createdAt,
     };
   }
 
@@ -51,6 +67,9 @@ class Mission {
     int? point,
     String? status,
     String? image,
+    String? completedDate,
+    String? link,
+    String? createdAt,
   }) {
     return Mission(
       id: id ?? this.id,
@@ -60,6 +79,9 @@ class Mission {
       point: point ?? this.point,
       status: status ?? this.status,
       image: image ?? this.image,
+      completedDate: completedDate ?? this.completedDate,
+      link: link ?? this.link,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

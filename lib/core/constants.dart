@@ -1,16 +1,32 @@
 class EcoConstants {
   EcoConstants._();
 
+  // ================= APP =================
+
   static const String appName = 'EcoVerse';
   static const String tagline = 'Small Actions, Big Impact';
 
-  //  PERBAIKAN: Ubah baseUrl misi ke domain yang baru
-  static const String baseUrl = 'https://6a44fe22aab3faec3f692f84.mockapi.io';
-  static const String usersBaseUrl = 'https://6a44fe22aab3faec3f692f84.mockapi.io';
+  // ================= BASE URL =================
 
-  //  PERBAIKAN: Pastikan menggunakan huruf 'm' kecil
+  /// Mission API
+  static const String baseUrl =
+      'https://6a44fe22aab3faec3f692f84.mockapi.io';
+
+  /// User API
+  static const String usersBaseUrl =
+      'https://6a44fe22aab3faec3f692f84.mockapi.io';
+
+  /// Journal API
+  static const String journalBaseUrl =
+      'https://6a4e1b6de785c9ef536c4cb6.mockapi.io';
+
+  // ================= ENDPOINT =================
+
   static const String missionsEndpoint = '/missions';
   static const String usersEndpoint = '/users';
+  static const String journalEndpoint = '/journal';
+
+  // ================= MISSION CATEGORY =================
 
   static const List<String> missionCategories = [
     'Semua',
