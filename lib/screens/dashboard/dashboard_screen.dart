@@ -6,6 +6,7 @@ import '../../core/colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/mission_provider.dart';
 import '../../widgets/bottom_navbar.dart';
+import '../mission_detail/mission_detail_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -134,26 +135,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ],
-          ),
-        ),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: EcoColors.card,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.notifications_outlined,
-            color: EcoColors.text,
-            size: 22,
           ),
         ),
       ],
@@ -348,10 +329,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildMissionCard(dynamic mission) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/mission_detail', arguments: mission)
-            .then((_) => context.read<MissionProvider>().refreshMissions());
-      },
+      onTap: () => _navigateToDetail(mission),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
@@ -435,10 +413,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/mission_detail', arguments: mission)
-                    .then((_) => context.read<MissionProvider>().refreshMissions());
-              },
+              onPressed: () => _navigateToDetail(mission),
               style: ElevatedButton.styleFrom(
                 backgroundColor: EcoColors.primary,
                 foregroundColor: Colors.white,
@@ -460,6 +435,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  // FUNGSI NAVIGASI AMAN: Menggunakan PageRouteBuilder untuk menyuntikkan argument secara dinamis
+  void _navigateToDetail(dynamic mission) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => MissionDetailScreen(),
+        settings: RouteSettings(arguments: mission),
+      ),
+    ).then((_) => context.read<MissionProvider>().refreshMissions());
   }
 
   Widget _buildShortcutMenu() {

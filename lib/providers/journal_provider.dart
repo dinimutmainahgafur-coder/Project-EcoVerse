@@ -21,9 +21,10 @@ class JournalProvider extends ChangeNotifier {
   List<Mission> get completedMissions {
     List<Mission> data = List.from(_completedMissions);
 
+    // FIX: Menggunakan toLowerCase() agar tidak error jika API mengembalikan huruf kecil
     if (_selectedCategory != 'Semua') {
       data = data.where((m) {
-        return m.category == _selectedCategory;
+        return m.category.toLowerCase() == _selectedCategory.toLowerCase();
       }).toList();
     }
 

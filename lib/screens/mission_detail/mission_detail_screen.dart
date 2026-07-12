@@ -9,42 +9,55 @@ import '../../providers/journal_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class MissionDetailScreen extends StatefulWidget {
-  // 1. Tambahkan parameter mission di constructor agar sinkron dengan screen sebelumnya
-  final Mission mission;
-  const MissionDetailScreen({super.key, required this.mission});
+  // 1. Parameter diubah menjadi opsional agar bisa dibuka via Named Routes dari main.dart
+  final Mission? mission;
+  const MissionDetailScreen({super.key, this.mission});
 
   @override
   State<MissionDetailScreen> createState() => _MissionDetailScreenState();
 }
 
 class _MissionDetailScreenState extends State<MissionDetailScreen> {
-  // 2. Gunakan late widget.mission untuk inisialisasi lokal jika datanya ingin dimutasi di state ini
-  late Mission mission;
+  // 2. Data mission dikelola secara lokal
+  Mission? mission;
   bool _proofUploaded = false;
   int _selectedDateIndex = 4;
+  bool _isInitialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Inisialisasi data mission dari widget constructor
-    mission = widget.mission;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 3. Menangkap argumen navigasi yang dikirim oleh DashboardScreen secara otomatis
+    if (!_isInitialized) {
+      if (widget.mission != null) {
+        mission = widget.mission;
+      } else {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        if (args is Mission) {
+          mission = args;
+        }
+      }
+      _isInitialized = true;
+    }
   }
 
   void _completeMission() async {
+    if (mission == null) return;
+
     final missionProvider = context.read<MissionProvider>();
     final journalProvider = context.read<JournalProvider>();
     final authProvider = context.read<AuthProvider>();
 
-    await missionProvider.updateMissionStatus(mission.id, 'Selesai');
-    await authProvider.addEcoPoint(mission.point);
+    await missionProvider.updateMissionStatus(mission!.id, 'Selesai');
+    await authProvider.addEcoPoint(mission!.point);
 
-    final updatedMission = mission.copyWith(status: 'Selesai');
+    final updatedMission = mission!.copyWith(status: 'Selesai');
     journalProvider.addCompletedMission(updatedMission);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Misi selesai! +${mission.point} Eco Points', style: GoogleFonts.poppins()),
+          content: Text('Misi selesai! +${mission!.point} Eco Points', style: GoogleFonts.poppins()),
           backgroundColor: EcoColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -56,6 +69,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Tampilan pelindung jika data mission gagal dimuat
+    if (mission == null) {
+      return Scaffold(
+        appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
+        body: const Center(child: Text("Data misi tidak ditemukan")),
+      );
+    }
+
     return Scaffold(
       backgroundColor: EcoColors.background,
       appBar: _buildAppBar(),
@@ -224,7 +245,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: CachedNetworkImage(
-            imageUrl: mission.image,
+            imageUrl: mission!.image,
             width: 130,
             height: 130,
             fit: BoxFit.cover,
@@ -250,7 +271,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Text(
-        mission.title,
+        mission!.title,
         style: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.w700,
@@ -265,7 +286,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Text(
-        mission.description,
+        mission!.description,
         style: GoogleFonts.poppins(
           fontSize: 13,
           color: EcoColors.subtitle,
@@ -289,7 +310,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           const Icon(Icons.monetization_on_rounded, size: 18, color: EcoColors.gold),
           const SizedBox(width: 6),
           Text(
-            '+${mission.point} Poin',
+            '+${mission!.point} Poin',
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -432,7 +453,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   }
 
   Widget _buildBottomButton() {
-    final isCompleted = mission.isCompleted;
+    final isCompleted = mission!.isCompleted;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),

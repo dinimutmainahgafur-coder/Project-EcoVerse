@@ -24,12 +24,12 @@ class _JournalScreenState extends State<JournalScreen> {
     'Energi',
   ];
 
-  String _selectedCat = 'Semua';
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
+      // FIX: Reset filter ke 'Semua' terlebih dahulu agar kondisi awal sinkron
+      context.read<JournalProvider>().resetFilter();
       context.read<JournalProvider>().fetchJournal();
     });
   }
@@ -323,14 +323,15 @@ class _JournalScreenState extends State<JournalScreen> {
         ),
       ),
       onChanged: (value) {
-        context
-            .read<JournalProvider>()
-            .searchJournal(value);
+        context.read<JournalProvider>().searchJournal(value);
       },
     );
   }
 
   Widget _buildCategoryChips() {
+    // FIX: Mengambil langsung kategori aktif dari provider agar state tombol selalu sinkron
+    final activeCategory = context.watch<JournalProvider>().selectedCategory;
+
     return SizedBox(
       height: 36,
       child: ListView.separated(
@@ -339,16 +340,11 @@ class _JournalScreenState extends State<JournalScreen> {
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final category = _categories[index];
-          final selected = category == _selectedCat;
+          final selected = category.toLowerCase() == activeCategory.toLowerCase();
 
           return GestureDetector(
             onTap: () {
-              setState(() {
-                _selectedCat = category;
-              });
-              context
-                  .read<JournalProvider>()
-                  .filterByCategory(category);
+              context.read<JournalProvider>().filterByCategory(category);
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -406,9 +402,9 @@ class _JournalScreenState extends State<JournalScreen> {
                 color: EcoColors.subtitle,
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          ], // Akhir dari children Column
+        ), // Akhir dari Column
+      ), // Akhir dari Padding
+    ); // Akhir dari Center
   }
-}
+} // AKHIR DARI CLASS _JournalScreenState (Kurung kurawal paling akhir di file)

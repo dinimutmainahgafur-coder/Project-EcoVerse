@@ -15,6 +15,8 @@ import 'screens/register/register_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/journal/journal_screen.dart';
 import 'screens/mission/mission_screen.dart';
+// JALUR IMPORT UTK DETAIL MISI SUDAH DISESUAIKAN DENGAN STRUKTUR FOLDER KAMU:
+import 'screens/mission_detail/mission_detail_screen.dart'; 
 import 'screens/upload/upload_screen.dart';
 import 'screens/academy/academy_screen.dart';
 import 'screens/challenge/challenge_screen.dart';
@@ -55,7 +57,7 @@ class EcoVerseApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardScreen(),
           '/journal': (context) => const JournalScreen(),
           '/mission': (context) => const MissionScreen(),
-          // Baris '/mission_detail' dihapus karena navigasi dilakukan secara dinamis menggunakan MaterialPageRoute
+          '/mission_detail': (context) => const MissionDetailScreen(), 
           '/upload': (context) => const UploadScreen(),
           '/academy': (context) => const AcademyScreen(),
           '/challenge': (context) => const ChallengeScreen(),
