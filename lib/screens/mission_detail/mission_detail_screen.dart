@@ -9,7 +9,7 @@ import '../../providers/journal_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class MissionDetailScreen extends StatefulWidget {
-  // 1. Parameter diubah menjadi opsional agar bisa dibuka via Named Routes dari main.dart
+  // Parameter dibuat opsional agar bisa dibuka via Named Routes dari main.dart maupun passing argumen langsung
   final Mission? mission;
   const MissionDetailScreen({super.key, this.mission});
 
@@ -18,7 +18,6 @@ class MissionDetailScreen extends StatefulWidget {
 }
 
 class _MissionDetailScreenState extends State<MissionDetailScreen> {
-  // 2. Data mission dikelola secara lokal
   Mission? mission;
   bool _proofUploaded = false;
   int _selectedDateIndex = 4;
@@ -27,7 +26,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 3. Menangkap argumen navigasi yang dikirim oleh DashboardScreen secara otomatis
+    // Menangkap argumen navigasi yang dikirim oleh DashboardScreen secara otomatis jika parameter constructor kosong
     if (!_isInitialized) {
       if (widget.mission != null) {
         mission = widget.mission;
@@ -69,7 +68,7 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Tampilan pelindung jika data mission gagal dimuat
+    // Tampilan pelindung jika data mission gagal dimuat atau null
     if (mission == null) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.white, elevation: 0),
@@ -453,44 +452,40 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
   }
 
   Widget _buildBottomButton() {
-    final isCompleted = mission!.isCompleted;
+    // Tombol AKTIF dan BISA DIKLIK hanya berdasarkan kondisi apakah bukti sudah diupload
+    final canFinish = _proofUploaded; 
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      color: Colors.white,
-      child: SizedBox(
-        width: double.infinity,
-        height: 54,
-        child: ElevatedButton(
-          onPressed: isCompleted ? null : _showConfirmDialog,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isCompleted
-                ? EcoColors.primary.withAlpha((0.5 * 255).round())
-                : EcoColors.primary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: EcoColors.primary.withAlpha((0.5 * 255).round()),
-            disabledForegroundColor: Colors.white.withAlpha((0.8 * 255).round()),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: isCompleted ? 0 : 4,
-            shadowColor: EcoColors.primary.withAlpha((0.3 * 255).round()),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isCompleted) ...[
-                const Icon(Icons.check_circle_rounded, size: 20),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                isCompleted ? 'Selesai' : 'Selesai',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+    return SafeArea(
+      top: false, // Menghindari interferensi dengan gesture garis navigasi bawah milik Android
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12), // Mengurangi padding bawah karena telah disesuaikan oleh SafeArea
+        color: Colors.white,
+        child: SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: ElevatedButton(
+            // Ketika canFinish = true (setelah upload), _showConfirmDialog aktif dijalankan saat ditekan
+            onPressed: canFinish ? _showConfirmDialog : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canFinish 
+                  ? EcoColors.primary 
+                  : EcoColors.primary.withAlpha((0.3 * 255).round()),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: EcoColors.primary.withAlpha((0.3 * 255).round()),
+              disabledForegroundColor: Colors.white.withAlpha((0.6 * 255).round()),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ],
+              elevation: canFinish ? 4 : 0,
+              shadowColor: EcoColors.primary.withAlpha((0.3 * 255).round()),
+            ),
+            child: Text(
+              'Selesai',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ),

@@ -136,7 +136,7 @@ class _MissionScreenState extends State<MissionScreen> {
                       size: 80,
                       color: Colors.green,
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     Text(
                       "Belum Ada Daily Mission",
                       style: TextStyle(
@@ -185,7 +185,7 @@ class _MissionScreenState extends State<MissionScreen> {
     );
   }
 
-  /// Widget Helper Card (FIXED OVERFLOW)
+  /// Widget Helper Card
   Widget _buildMissionCard(Mission mission) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
@@ -199,6 +199,7 @@ class _MissionScreenState extends State<MissionScreen> {
           ),
         );
 
+        // PENGAMAN: Cek apakah widget masih aktif sebelum refresh data
         if (!mounted) return;
         refreshMission();
       },
@@ -217,9 +218,7 @@ class _MissionScreenState extends State<MissionScreen> {
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start, // Sejajarkan rata atas
           children: [
-            // 1. Icon Kategori Misi
             Container(
               width: 60,
               height: 60,
@@ -234,18 +233,12 @@ class _MissionScreenState extends State<MissionScreen> {
               ),
             ),
             const SizedBox(width: 15),
-
-            // 2. Konten Tengah (Judul, Deskripsi, Badge & Kategori)
-            // Dibungkus Expanded agar memaksa teks mengalah pada lebar layar
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     mission.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -262,11 +255,7 @@ class _MissionScreenState extends State<MissionScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Menggunakan Wrap menggantikan Row agar badge aman dari overflow vertikal/horizontal
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                  Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -282,10 +271,10 @@ class _MissionScreenState extends State<MissionScreen> {
                           style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
                           ),
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -301,7 +290,6 @@ class _MissionScreenState extends State<MissionScreen> {
                           style: TextStyle(
                             color: getStatusColor(mission.status),
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -318,16 +306,10 @@ class _MissionScreenState extends State<MissionScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-
-            // 3. Icon Panah Kanan
-            const Padding(
-              padding: EdgeInsets.only(top: 4), // Penyelarasan visual sedikit ke bawah
-              child: Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-                color: Colors.grey,
-              ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: Colors.grey,
             ),
           ],
         ),
