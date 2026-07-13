@@ -25,30 +25,22 @@ class LeaderboardProvider with ChangeNotifier {
       final users = await _apiService.getUsers();
 
       _allUsersData = users.map((user) {
-        // Mengubah object user ke Map agar aman dibaca jika ada perbedaan nama variabel (point/points)
-        final Map<String, dynamic> userMap = {};
-        try {
-          // Mencoba memanggil method toJson jika ada di model User kamu
-          userMap.addAll((user as dynamic).toJson());
-        } catch (_) {
-          // Proteksi cadangan jika tidak ada method toJson
-        }
-
-        // Cari tahu apakah field poin di database menggunakan nama 'points', 'point', atau 'xp'
-        final int userPoint = userMap['points'] ?? userMap['point'] ?? userMap['xp'] ?? 0;
+        // Mengambil properti langsung dari objek User (anti-typo)
+        final int userPoint = user.ecoPoint; 
+        final int userLevel = user.level;
 
         return {
           'id': user.id,
           'name': user.name,
           'point': userPoint,
-          'level': userPoint ~/ 100 + 1, 
+          'level': userLevel, 
         };
       }).toList();
 
       filterLeaderboard(_selectedFilter);
     } catch (e) {
       debugPrint("Error fetching leaderboard: $e");
-    } finally { // <--- PERBAIKAN TYPO: Sekarang double 'l'
+    } finally { 
       _isLoading = false;
       notifyListeners();
     }
@@ -74,8 +66,10 @@ class LeaderboardProvider with ChangeNotifier {
       _filteredData = baseList;
     }
 
+    // Mengurutkan poin dari yang TERBESAR ke TERKECIL
     _filteredData.sort((a, b) => (b['point'] as int).compareTo(a['point'] as int));
 
+    // Membuat penomoran peringkat (#1, #2, #3, dst) berdasarkan urutan poin terbaru
     for (int i = 0; i < _filteredData.length; i++) {
       _filteredData[i]['rank'] = i + 1;
     }

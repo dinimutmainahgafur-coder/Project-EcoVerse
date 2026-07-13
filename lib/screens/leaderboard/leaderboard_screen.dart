@@ -47,6 +47,7 @@ class LeaderboardScreen extends StatelessWidget {
             else ...[
               _buildPodium(data),
               const SizedBox(height: 20),
+              // Menampilkan sisa list peringkat mulai dari urutan ke-4 ke bawah
               ...data.skip(3).map((d) => _buildRankItem(d, false)),
             ],
           ],
