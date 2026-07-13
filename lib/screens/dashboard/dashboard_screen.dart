@@ -28,18 +28,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _onTabChanged(int index) {
     if (index == _currentIndex) return;
+    
+    // Set index aktif untuk tab yang sedang diklik
+    setState(() {
+      _currentIndex = index;
+    });
+
     switch (index) {
       case 1:
-        Navigator.pushReplacementNamed(context, '/journal');
+        Navigator.pushNamed(context, '/journal').then((_) {
+          // Reset kembali ke tab Dashboard (0) saat user menekan tombol back
+          setState(() {
+            _currentIndex = 0;
+          });
+        });
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/mission');
+        // Pindah ke halaman misi tanpa menghancurkan Dashboard
+        Navigator.pushNamed(context, '/mission').then((_) {
+          // Reset ke tab Dashboard (0) dan refresh data misi saat kembali
+          setState(() {
+            _currentIndex = 0;
+          });
+          context.read<MissionProvider>().refreshMissions();
+        });
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/leaderboard');
+        Navigator.pushNamed(context, '/leaderboard').then((_) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        });
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/profile');
+        Navigator.pushNamed(context, '/profile').then((_) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        });
         break;
     }
   }
@@ -437,7 +463,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // FUNGSI NAVIGASI AMAN: Menggunakan PageRouteBuilder untuk menyuntikkan argument secara dinamis
   void _navigateToDetail(dynamic mission) {
     Navigator.push(
       context,
